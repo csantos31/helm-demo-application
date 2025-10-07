@@ -7,9 +7,20 @@ jobs:
     runs-on: ubuntu-latest 
     steps: 
       - uses: actions/checkout@v3 
-      - name: Build Docker image 
-        run: docker build -t ghcr.io/${{ github.repository_owner }}/my-react-app:latest . 
-      - name: Login to GitHub Container Registry 
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin 
-      - name: Push Image 
-        run: docker push ghcr.io/${{ github.repository_owner }}/my-react-app:latest
+      - name: Log in to GHCR
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_PAT }}
+      - name: Build and push Docker image
+        run: |
+          docker build -t ghcr.io/csantos31/my-react-app:latest .
+          docker push ghcr.io/csantos31/my-react-app:latest
+
+      # - name: Build Docker image 
+      #   run: docker build -t ghcr.io/${{ github.repository_owner }}/my-react-app:latest . 
+      # - name: Login to GitHub Container Registry 
+      #   run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin 
+      # - name: Push Image 
+      #   run: docker push ghcr.io/${{ github.repository_owner }}/my-react-app:latest
