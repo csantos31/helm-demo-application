@@ -1,46 +1,87 @@
-# Getting Started with Create React App
+# Helm Demo Application
+![GitHub Actions](https://img.shields.io/badge/github%20actions-%232671E5.svg?style=for-the-badge&logo=githubactions&logoColor=white)
+![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?label=GHCR%20Image&style=for-the-badge&logo=docker&logoColor=white)
+![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+---
 
-## Available Scripts
+This repository contains a simple React application built from the default `create-react-app` template.  
+Although the application itself has no functional modifications, this project focuses on demonstrating containerization and CI/CD automation for deployment workflows.
 
-In the project directory, you can run:
+---
 
-### `npm start`
+## 🧩 Project Overview
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+The purpose of this repository is to serve as a **base application** to generate a Docker image that will be used by a Helm chart in a separate repository ([helm-demo-chart](https://github.com/csantos31/helm-demo-chart)).
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+---
 
-### `npm test`
+## 🛠️ Tech Stack
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- **React** (via `create-react-app`)
+- **Docker**
+- **GitHub Actions**
+- **GitHub Container Registry (GHCR)**
+- **Nginx** (as the web server in the container)
 
-### `npm run build`
+---
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 🐳 Dockerization
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+The `Dockerfile` defines the build and runtime environment for the React app.  
+It uses a **multi-stage build** approach to optimize image size:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+1. **Build stage:** Compiles the React app using Node.js.
+2. **Runtime stage:** Serves the static files using Nginx.
 
-### `npm run eject`
+```Dockerfile
+# Example structure
+FROM node:18 AS build
+WORKDIR /app
+COPY . .
+RUN npm ci && npm run build
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+FROM nginx:alpine
+COPY --from=build /app/build /usr/share/nginx/html
+```
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## ⚙️ GitHub Actions (CI/CD)
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+The repository includes a GitHub Actions workflow that:
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+Builds the Docker image.
 
-## Learn More
+Pushes it to GitHub Container Registry (GHCR) under your account.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+This ensures that any commit to the main branch triggers a rebuild and publishes the updated image automatically.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+> Example workflow file: .github/workflows/docker-image.yml
+
+## 🚀 Running Locally
+
+To run the app locally without Docker:
+```
+npm install
+npm start
+```
+
+To build and run via Docker:
+```
+docker build -t helm-demo-app .
+docker run -p 3000:80 helm-demo-app
+```
+
+## 🏗️ Deployment Integration
+
+This application is consumed by a Helm chart located at:
+👉 helm-demo-chart
+
+That chart pulls the image built and hosted via GHCR, enabling Kubernetes deployment.
+
+## 📚 Learnings & Goals
+
+* Implemented a full CI/CD pipeline using GitHub Actions and GHCR.
+
+* Practiced containerization of a front-end React app with Nginx.
+
+* Served as the foundation for a Helm-based deployment workflow.
